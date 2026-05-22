@@ -1,7 +1,11 @@
+# Service para a API
 apiVersion: v1
 kind: Service
 metadata:
   name: users-api
+  labels:
+    app.kubernetes.io/name: users-api
+    app.kubernetes.io/component: api
 spec:
   type: ClusterIP
   ports:
@@ -9,3 +13,21 @@ spec:
       targetPort: 8080
   selector:
     app: users-api
+
+---
+# Service para o SQL Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlserver
+  labels:
+    app.kubernetes.io/name: sqlserver
+    app.kubernetes.io/component: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 1433
+      targetPort: 1433
+      name: sqlserver
+  selector:
+    app: sqlserver

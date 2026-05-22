@@ -91,7 +91,12 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddDbContext<FiapCloudGamesDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null));
 }, ServiceLifetime.Scoped);
 
 builder.Services.Configure<JwtConfigs>(
@@ -105,6 +110,13 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+// Aplicar migrations automaticamente
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FiapCloudGamesDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseCorrelationId();
 app.UseErrorHandling();

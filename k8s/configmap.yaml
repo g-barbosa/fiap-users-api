@@ -1,3 +1,4 @@
+# ConfigMap para a API
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,3 +12,19 @@ data:
   TZ: "America/Sao_Paulo"
   Logging__LogLevel__Default: "Information"
   Logging__LogLevel__Microsoft.AspNetCore: "Warning"
+
+---
+# PersistentVolumeClaim para o SQL Server
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sqlserver-data
+  labels:
+    app.kubernetes.io/name: sqlserver
+    app.kubernetes.io/component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
