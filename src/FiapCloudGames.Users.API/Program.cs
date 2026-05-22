@@ -109,11 +109,8 @@ var app = builder.Build();
 app.UseCorrelationId();
 app.UseErrorHandling();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();
