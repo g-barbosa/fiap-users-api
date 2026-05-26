@@ -1,5 +1,47 @@
 # Kubernetes Manifests - FIAP Users API
 
+Manifestos Kubernetes para deploy da Users API no cluster.
+
+## 📁 Arquivos
+
+| Arquivo | Tipo | Descrição |
+|---------|------|-----------|
+| `configmap.yaml` | ConfigMap | Configurações **NÃO** sensíveis (env, URLs, logs) |
+| `secret.yaml` | Secret | Dados **SENSÍVEIS** (connection strings, JWT keys) |
+| `deployment.yaml` | Deployment | Gerenciamento de Pods da API e SQL Server |
+| `service.yaml` | Service | Exposição dos serviços |
+
+## 🚀 Deploy
+
+### Via Orquestrador (Recomendado)
+
+Use o repositório `fiap-orchestration` para deploy centralizado:
+
+```bash
+cd ../fiap-orchestration
+kubectl apply -k k8s/
+```
+
+### Deploy Individual
+
+```bash
+# 1. Criar namespace (se não existir)
+kubectl create namespace fiap-cloud-games --dry-run=client -o yaml | kubectl apply -f -
+
+# 2. Aplicar todos os manifestos
+kubectl apply -f .
+
+# 3. Verificar
+kubectl get all -n fiap-cloud-games
+```
+
+## 📝 Convenções Seguidas
+
+- ✅ **Deployments** para gerenciar Pods (não Pods isolados)
+- ✅ **ConfigMaps** para configurações não sensíveis
+- ✅ **Secrets** para dados sensíveis
+- ✅ Namespace: `fiap-cloud-games` - FIAP Users API
+
 ## Estrutura
 
 ```
