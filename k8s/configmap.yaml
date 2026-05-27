@@ -16,6 +16,10 @@ data:
   Logging__LogLevel__Default: "Information"
   Logging__LogLevel__Microsoft.AspNetCore: "Warning"
   Logging__LogLevel__Microsoft.EntityFrameworkCore: "Warning"
+  
+  # RabbitMQ - Configurações não sensíveis
+  RabbitMq__Host: "rabbitmq"
+  RabbitMq__Port: "5672"
 
 ---
 # PersistentVolumeClaim para o SQL Server
