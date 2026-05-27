@@ -1,7 +1,9 @@
 ﻿using FiapCloudGames.Users.Application.Usuarios.Inputs;
 using FiapCloudGames.Users.Application.Usuarios.Interfaces;
+using FiapCloudGames.Users.Application.Usuarios.Interfaces.Messaging;
 using FiapCloudGames.Users.Application.Usuarios.Outputs;
 using FiapCloudGames.Users.Domain.Usuarios.Entities;
+using FiapCloudGames.Users.Domain.Usuarios.Events;
 using FiapCloudGames.Users.Domain.Usuarios.Interfaces;
 
 namespace FiapCloudGames.Users.Application.Usuarios.Services
@@ -13,11 +15,16 @@ namespace FiapCloudGames.Users.Application.Usuarios.Services
     /// Esta classe coordena validações e orquestra dependências (por exemplo, repositórios e serviços de segurança)
     /// para executar operações como cadastro de usuários.
     /// </remarks>
-    public class UsuarioService(IUsuarioRepository usuarioRepository, IUsuarioDomainService usuarioDomainService, ITokenService tokenService) : IUsuarioService
+    public class UsuarioService(
+        IUsuarioRepository usuarioRepository, 
+        IUsuarioDomainService usuarioDomainService, 
+        ITokenService tokenService, 
+        IUsuarioEventPublisher usuarioEventPublisher) : IUsuarioService
     {
         private readonly IUsuarioRepository _usuarioRepository = usuarioRepository;
         private readonly IUsuarioDomainService _usuarioDomainService = usuarioDomainService;
         private readonly ITokenService _tokenService = tokenService;
+        private readonly IUsuarioEventPublisher _usuarioEventPublisher = usuarioEventPublisher;
 
         /// <inheritdoc />
         public async Task<Guid> CadastrarUsuario(CadastroUsuarioInput input)
@@ -29,6 +36,13 @@ namespace FiapCloudGames.Users.Application.Usuarios.Services
             Usuario usuario = await _usuarioDomainService.CriarAsync(input.Nome, input.Email, senhaHash);
 
             await _usuarioRepository.AdicionarAsync(usuario);
+
+            await _usuarioEventPublisher.PublicarUsuarioCriadoAsync(new UsuarioCriadoEvent 
+            { 
+                Email = usuario.Email.Endereco,
+                Id = usuario.Id,
+                Nome = usuario.Nome
+            });
 
             return usuario.Id;
         }

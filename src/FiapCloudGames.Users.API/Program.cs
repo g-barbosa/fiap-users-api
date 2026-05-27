@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
+using FiapCloudGames.Users.Application.Usuarios.Interfaces.Messaging;
+using FiapCloudGames.Users.Infrastructure.Messaging.Publishers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +109,7 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IUsuarioDomainService, UsuarioDomainService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUsuarioEventPublisher, RabbitMqUsuarioEventPublisher>();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
