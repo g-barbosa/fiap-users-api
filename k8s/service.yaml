@@ -8,6 +8,10 @@ metadata:
     app.kubernetes.io/name: users-api
     app.kubernetes.io/component: api
     app.kubernetes.io/part-of: fiap-cloud-games
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8080"
 spec:
   type: ClusterIP
   ports:

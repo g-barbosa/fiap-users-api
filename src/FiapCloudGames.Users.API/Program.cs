@@ -14,6 +14,7 @@ using Serilog;
 using System.Diagnostics.CodeAnalysis;
 using FiapCloudGames.Users.Application.Usuarios.Interfaces.Messaging;
 using FiapCloudGames.Users.Infrastructure.Messaging.Publishers;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,12 +133,14 @@ app.UseErrorHandling();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseHttpMetrics();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.MapHealthChecks("/health");
+app.MapMetrics();
 
 app.Run();
 
