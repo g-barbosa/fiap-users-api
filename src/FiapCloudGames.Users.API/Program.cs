@@ -89,7 +89,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddHealthChecks();
+var rabbitMqHost = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq";
+var rabbitMqPort = int.Parse(builder.Configuration["RabbitMq:Port"] ?? "5672");
+var rabbitMqUri = new Uri($"amqp://admin:rabbitmq123@{rabbitMqHost}:{rabbitMqPort}/");
+
+builder.Services.AddHealthChecks()
+    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ?? "", name: "SqlServer");
 
 builder.Services.AddDbContext<FiapCloudGamesDbContext>(options =>
 {
