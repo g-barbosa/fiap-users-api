@@ -20,6 +20,7 @@ Esta API é responsável pelo gerenciamento de usuários da plataforma FIAP Clou
 - **JWT** - Autenticação
 - **RabbitMQ** - Mensageria
 - **Serilog** - Logging
+- **Prometheus** - Métricas (`/metrics`) via prometheus-net
 - **Docker/Kubernetes** - Containerização e orquestração
 
 ## 🚀 Como Executar
