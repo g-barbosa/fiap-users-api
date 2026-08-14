@@ -7,6 +7,7 @@ using FiapCloudGames.Users.Infrastructure.Data.Persistence.Repositories;
 using FiapCloudGames.Users.Infrastructure.Security;
 using FiapCloudGames.Users.Infrastructure.Security.settings;
 using FiapCloudGames.Users.Infrastructure.Services;
+using FiapCloudGames.Users.Infrastructure.Caching;
 using FiapCloudGames.Users.API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -107,11 +108,26 @@ builder.Services.AddDbContext<FiapCloudGamesDbContext>(options =>
             errorNumbersToAdd: null));
 }, ServiceLifetime.Scoped);
 
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "fiap-users:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
 builder.Services.Configure<JwtConfigs>(
     builder.Configuration.GetSection("Jwt"));
 
 builder.Services.AddScoped<ICorrelationIdService, CorrelationIdService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioCache, RedisUsuarioCache>();
 builder.Services.AddScoped<IUsuarioDomainService, UsuarioDomainService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
