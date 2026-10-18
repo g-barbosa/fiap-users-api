@@ -20,21 +20,3 @@ data:
   # RabbitMQ - Configurações não sensíveis
   RabbitMq__Host: "rabbitmq"
   RabbitMq__Port: "5672"
-
----
-# PersistentVolumeClaim para o SQL Server
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: sqlserver-data
-  namespace: fiap-cloud-games
-  labels:
-    app.kubernetes.io/name: sqlserver
-    app.kubernetes.io/component: database
-    app.kubernetes.io/part-of: fiap-cloud-games
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi

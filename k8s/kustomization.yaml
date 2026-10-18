@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - configmap.yaml
+  - secret.yaml
+  - service.yaml
+  - deployment.yaml
+
+# Registry privado da nuvem. Troque newName antes do deploy no cluster gerenciado.
+# ECR:    123456789012.dkr.ecr.us-east-1.amazonaws.com/fiap-users-api
+# ACR:    <nome>.azurecr.io/fiap-users-api
+# GAR:    <region>-docker.pkg.dev/<project>/<repo>/fiap-users-api
+# OCIR:   <region>.ocir.io/<namespace>/fiap-users-api
+images:
+  - name: fiap-users-api
+    newName: fiap-users-api
+    newTag: "0.1.0"
