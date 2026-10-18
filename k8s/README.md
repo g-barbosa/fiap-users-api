@@ -4,23 +4,24 @@
 
 ```
 k8s/
-├── configmap.yaml      # Configurações não-sensíveis + PVC do SQL Server
-├── secret.yaml         # Secrets (JWT, Connection String, SQL Server Password)
-├── deployment.yaml     # Deployment da API + SQL Server
-└── service.yaml        # Services (API + SQL Server)
+├── configmap.yaml      # Configurações não-sensíveis
+├── secret.yaml         # Secrets da API (JWT, connection string, RabbitMQ)
+├── deployment.yaml     # Deployment da API (2 réplicas, rolling update)
+├── service.yaml        # Service ClusterIP
+└── kustomization.yaml  # Tag da imagem e registry privado
 ```
 
 ## Pré-requisitos
 
-- Cluster Kubernetes 1.25+ (Docker Desktop, Minikube, Kind, etc.)
+- Cluster Kubernetes 1.25+ (gerenciado ou local)
 - kubectl configurado
-- Imagem Docker da API construída localmente
+- Infra já aplicada a partir de `fiap-orchestration` (`kubectl apply -k k8s/`), inclusive o SQL Server
 
 ## Build da Imagem Docker
 
 ```bash
 # Na raiz do projeto
-docker build -t fiap-users-api:latest .
+docker build -t fiap-users-api:0.1.0 .
 ```
 
 ## Deploy
@@ -29,13 +30,7 @@ docker build -t fiap-users-api:latest .
 
 ```bash
 # Aplicar na ordem correta
-kubectl apply -f k8s/secret.yaml
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/deployment.yaml
-
-# Ou tudo de uma vez
-kubectl apply -f k8s/
+kubectl apply -k k8s/
 ```
 
 ### Acessar localmente
@@ -70,16 +65,12 @@ kubectl logs -l app=sqlserver -f
 ## Componentes
 
 ### API (users-api)
-- **Deployment**: 1 réplica, porta 8080
-- **Service**: ClusterIP na porta 80
+- **Deployment**: 2 réplicas, RollingUpdate com `maxUnavailable: 0`, porta 8080
+- **Service**: ClusterIP na porta 80 (exposição externa só pelo Kong)
 - **ConfigMap**: Variáveis de ambiente (ASPNETCORE_ENVIRONMENT, etc.)
 - **Secret**: Connection string e configurações JWT
 
-### SQL Server
-- **Deployment**: SQL Server 2022, porta 1433
-- **Service**: ClusterIP na porta 1433
-- **PVC**: 1Gi de armazenamento persistente
-- **Secret**: Senha do SA
+O SQL Server fica em `fiap-orchestration/k8s/sqlserver` (uma instância, ClusterIP `sqlserver:1433`).
 
 ## Configuração
 
@@ -93,23 +84,14 @@ stringData:
   ConnectionStrings__DefaultConnection: "SUA_CONNECTION_STRING"
   Jwt__Key: "SUA_CHAVE_JWT_SEGURA"
   
-  # SQL Server Secret
-  MSSQL_SA_PASSWORD: "SUA_SENHA_SEGURA"
 ```
 
-### Imagem Docker
+### Imagem e registry
 
-Para produção, atualize a imagem no `deployment.yaml`:
-
-```yaml
-containers:
-  - name: users-api
-    image: seu-registry.azurecr.io/fiap-users-api:v1.0.0
-    imagePullPolicy: Always
-```
+A tag padrão é `0.1.0`. No cluster gerenciado, altere `images.newName` em `kustomization.yaml` para o registry privado da nuvem. Em EKS, a role da node group precisa de permissão de pull no ECR. Em AKS, ACR ou GKE, crie o Secret `cloud-registry` e referencie em `imagePullSecrets` se o cluster não tiver identidade integrada.
 
 ## Remover
 
 ```bash
-kubectl delete -f k8s/
+kubectl delete -k k8s/
 ```
