@@ -26,8 +26,8 @@ namespace FiapCloudGames.Users.BDD.Features
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("pt-BR"), "Features", "Cadastro de Usuário", "    Como um novo usuário\r\n    Eu quero me cadastrar na plataforma\r\n    Para que e" +
-                "u possa acessar o sistema e utilizar seus recursos", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("pt-BR"), "Features", "Cadastro de Usuário", ("    Como um novo usuário\r\n    Eu quero me cadastrar na plataforma\r\n    Para que e" +
+                "u possa acessar o sistema e utilizar seus recursos"), global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
         
         private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
@@ -180,8 +180,8 @@ await this.FeatureBackgroundAsync();
     await testRunner.WhenAsync("eu tento cadastrar um usuário com os seguintes dados:", ((string)(null)), table2, "Quando ");
 #line hidden
 #line 22
-    await testRunner.ThenAsync("o cadastro deve falhar com erro \"A senha deve conter ao menos uma letra maiúscula" +
-                        ".\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");
+    await testRunner.ThenAsync(("o cadastro deve falhar com erro \"A senha deve conter ao menos uma letra maiúscula" +
+                        ".\""), ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");
 #line hidden
 #line 23
     await testRunner.AndAsync("nenhum usuário deve ser adicionado ao repositório", ((string)(null)), ((global::Reqnroll.Table)(null)), "E ");
@@ -223,8 +223,8 @@ await this.FeatureBackgroundAsync();
     await testRunner.WhenAsync("eu tento cadastrar um usuário com os seguintes dados:", ((string)(null)), table3, "Quando ");
 #line hidden
 #line 29
-    await testRunner.ThenAsync("o cadastro deve falhar com erro \"A senha deve conter ao menos uma letra minúscula" +
-                        ".\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");
+    await testRunner.ThenAsync(("o cadastro deve falhar com erro \"A senha deve conter ao menos uma letra minúscula" +
+                        ".\""), ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");
 #line hidden
 #line 30
     await testRunner.AndAsync("nenhum usuário deve ser adicionado ao repositório", ((string)(null)), ((global::Reqnroll.Table)(null)), "E ");
@@ -308,8 +308,8 @@ await this.FeatureBackgroundAsync();
     await testRunner.WhenAsync("eu tento cadastrar um usuário com os seguintes dados:", ((string)(null)), table5, "Quando ");
 #line hidden
 #line 43
-    await testRunner.ThenAsync("o cadastro deve falhar com erro \"A senha deve conter ao menos um caractere especi" +
-                        "al.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");
+    await testRunner.ThenAsync(("o cadastro deve falhar com erro \"A senha deve conter ao menos um caractere especi" +
+                        "al.\""), ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");
 #line hidden
 #line 44
     await testRunner.AndAsync("nenhum usuário deve ser adicionado ao repositório", ((string)(null)), ((global::Reqnroll.Table)(null)), "E ");

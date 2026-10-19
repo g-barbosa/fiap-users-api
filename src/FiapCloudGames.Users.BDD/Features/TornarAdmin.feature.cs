@@ -26,8 +26,8 @@ namespace FiapCloudGames.Users.BDD.Features
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("pt-BR"), "Features", "Promover Usuário a Administrador", "    Como um administrador do sistema\r\n    Eu quero promover usuários comuns a adm" +
-                "inistradores\r\n    Para que eles possam gerenciar o sistema", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("pt-BR"), "Features", "Promover Usuário a Administrador", ("    Como um administrador do sistema\r\n    Eu quero promover usuários comuns a adm" +
+                "inistradores\r\n    Para que eles possam gerenciar o sistema"), global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
         
         private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
@@ -175,8 +175,8 @@ await this.FeatureBackgroundAsync();
     await testRunner.GivenAsync("que não existe nenhum usuário com o ID \"00000000-0000-0000-0000-000000000000\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Dado ");
 #line hidden
 #line 21
-    await testRunner.WhenAsync("eu tento promover o usuário com ID \"00000000-0000-0000-0000-000000000000\" a admin" +
-                        "istrador", ((string)(null)), ((global::Reqnroll.Table)(null)), "Quando ");
+    await testRunner.WhenAsync(("eu tento promover o usuário com ID \"00000000-0000-0000-0000-000000000000\" a admin" +
+                        "istrador"), ((string)(null)), ((global::Reqnroll.Table)(null)), "Quando ");
 #line hidden
 #line 22
     await testRunner.ThenAsync("a promoção deve falhar com erro \"Usuário não encontrado.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Então ");

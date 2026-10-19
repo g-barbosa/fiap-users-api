@@ -1,8 +1,10 @@
 using FiapCloudGames.Users.Application.Usuarios.Inputs;
 using FiapCloudGames.Users.Application.Usuarios.Interfaces;
+using FiapCloudGames.Users.Application.Usuarios.Interfaces.Messaging;
 using FiapCloudGames.Users.Application.Usuarios.Services;
 using FiapCloudGames.Users.Domain.Usuarios.Entities;
 using FiapCloudGames.Users.Domain.Usuarios.Enums;
+using FiapCloudGames.Users.Domain.Usuarios.Events;
 using FiapCloudGames.Users.Domain.Usuarios.Interfaces;
 using FiapCloudGames.Users.Domain.Usuarios.ValueObjects;
 
@@ -13,11 +15,31 @@ namespace FiapCloudGames.Users.Tests.Services
         private readonly Mock<IUsuarioRepository> _repositoryMock = new();
         private readonly Mock<IUsuarioDomainService> _domainServiceMock = new();
         private readonly Mock<ITokenService> _tokenServiceMock = new();
+        private readonly Mock<IUsuarioEventPublisher> _eventPublisherMock = new();
+        private readonly Mock<IUsuarioCache> _cacheMock = new();
         private readonly UsuarioService _usuarioService;
 
         public UsuarioServiceTests()
         {
-            _usuarioService = new UsuarioService(_repositoryMock.Object, _domainServiceMock.Object, _tokenServiceMock.Object);
+            _cacheMock
+                .Setup(c => c.AdicionarAsync(It.IsAny<Usuario>(), It.IsAny<int>()))
+                .Returns(Task.CompletedTask);
+            _cacheMock
+                .Setup(c => c.AdicionarEmailAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+                .Returns(Task.CompletedTask);
+            _cacheMock
+                .Setup(c => c.RemoverAsync(It.IsAny<Guid>()))
+                .Returns(Task.CompletedTask);
+            _eventPublisherMock
+                .Setup(p => p.PublicarUsuarioCriadoAsync(It.IsAny<UsuarioCriadoEvent>()))
+                .Returns(Task.CompletedTask);
+
+            _usuarioService = new UsuarioService(
+                _repositoryMock.Object,
+                _domainServiceMock.Object,
+                _tokenServiceMock.Object,
+                _eventPublisherMock.Object,
+                _cacheMock.Object);
         }
 
         // CadastrarUsuario

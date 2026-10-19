@@ -1,0 +1,131 @@
+# Build, testes, imagem e scan rodam sem registry.
+# Push e deploy só na main, quando os secrets abaixo existirem:
+#   REGISTRY, REGISTRY_USERNAME, REGISTRY_PASSWORD
+#   KUBE_CONFIG (kubeconfig em texto ou base64) para o rolling update
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: fiap-users-api
+  DOTNET_VERSION: "8.0.x"
+  DEPLOYMENT: users-api
+  NAMESPACE: fiap-cloud-games
+
+jobs:
+  build-test:
+    name: Build e testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore src/FiapCloudGames.Users.Tests/FiapCloudGames.Users.Tests.csproj
+
+      - name: Build
+        run: dotnet build src/FiapCloudGames.Users.API/FiapCloudGames.Users.API.csproj -c Release --no-restore
+
+      - name: Test
+        run: dotnet test src/FiapCloudGames.Users.Tests/FiapCloudGames.Users.Tests.csproj -c Release --verbosity normal
+
+  image:
+    name: Imagem e scan
+    needs: build-test
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.gate.outputs.publish }}
+      deploy: ${{ steps.gate.outputs.deploy }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build da imagem
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Scan da imagem
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: table
+          exit-code: "0"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Verificar secrets de registry e cluster
+        id: gate
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          publish=false
+          deploy=false
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ] \
+            && [ -n "$REGISTRY" ] && [ -n "$REGISTRY_USERNAME" ] && [ -n "$REGISTRY_PASSWORD" ]; then
+            publish=true
+          fi
+          if [ "$publish" = "true" ] && [ -n "$KUBE_CONFIG" ]; then
+            deploy=true
+          fi
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+          if [ "$publish" != "true" ]; then
+            echo "::notice::Push ignorado. Defina REGISTRY, REGISTRY_USERNAME e REGISTRY_PASSWORD para publicar na main."
+          elif [ "$deploy" != "true" ]; then
+            echo "::notice::Deploy ignorado. Defina KUBE_CONFIG para o rolling update no cluster."
+          fi
+
+      - name: Login no registry
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin
+
+      - name: Push da imagem
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} "$REGISTRY/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          docker push "$REGISTRY/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+
+  deploy:
+    name: Deploy
+    needs: image
+    if: needs.image.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Rolling update
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if printf '%s' "$KUBE_CONFIG" | head -c 20 | grep -q apiVersion; then
+            printf '%s' "$KUBE_CONFIG" > "$RUNNER_TEMP/kubeconfig"
+          else
+            printf '%s' "$KUBE_CONFIG" | base64 -d > "$RUNNER_TEMP/kubeconfig"
+          fi
+          chmod 600 "$RUNNER_TEMP/kubeconfig"
+          export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
+          image="$REGISTRY/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          kubectl set image "deployment/${{ env.DEPLOYMENT }}" "${{ env.DEPLOYMENT }}=$image" -n "$NAMESPACE"
+          kubectl rollout status "deployment/${{ env.DEPLOYMENT }}" -n "$NAMESPACE" --timeout=300s

@@ -26,8 +26,8 @@ namespace FiapCloudGames.Users.BDD.Features
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("pt-BR"), "Features", "Login de Usuário", "    Como um usuário cadastrado no sistema\r\n    Eu quero fazer login com minhas cr" +
-                "edenciais\r\n    Para que eu possa obter um token de acesso e utilizar a API", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new System.Globalization.CultureInfo("pt-BR"), "Features", "Login de Usuário", ("    Como um usuário cadastrado no sistema\r\n    Eu quero fazer login com minhas cr" +
+                "edenciais\r\n    Para que eu possa obter um token de acesso e utilizar a API"), global::Reqnroll.ProgrammingLanguage.CSharp, featureTags);
         
         private Xunit.Abstractions.ITestOutputHelper _testOutputHelper;
         
