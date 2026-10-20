@@ -88,7 +88,7 @@ stringData:
 
 ### Imagem e registry
 
-A tag padrão é `0.1.0`. No cluster gerenciado, altere `images.newName` em `kustomization.yaml` para o registry privado da nuvem. Em EKS, a role da node group precisa de permissão de pull no ECR. Em AKS, ACR ou GKE, crie o Secret `cloud-registry` e referencie em `imagePullSecrets` se o cluster não tiver identidade integrada.
+A tag padrão é `0.1.0` e o registry é `fcgcontainerregistry.azurecr.io`. No AKS, anexe o ACR ao cluster (`AcrPull`) para o pull sem `imagePullSecrets`. Sem esse anexo, crie o Secret `cloud-registry` e referencie em `imagePullSecrets`.
 
 ## Remover
 
