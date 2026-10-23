@@ -93,7 +93,10 @@ builder.Services.AddSwaggerGen(c =>
 
 var rabbitMqHost = builder.Configuration["RabbitMq:Host"] ?? "rabbitmq";
 var rabbitMqPort = int.Parse(builder.Configuration["RabbitMq:Port"] ?? "5672");
-var rabbitMqUri = new Uri($"amqp://admin:rabbitmq123@{rabbitMqHost}:{rabbitMqPort}/");
+var rabbitMqUser = builder.Configuration["RabbitMq:Username"] ?? "admin";
+var rabbitMqPassword = builder.Configuration["RabbitMq:Password"]
+    ?? throw new InvalidOperationException("RabbitMq:Password não configurada.");
+var rabbitMqUri = new Uri($"amqp://{Uri.EscapeDataString(rabbitMqUser)}:{Uri.EscapeDataString(rabbitMqPassword)}@{rabbitMqHost}:{rabbitMqPort}/");
 
 builder.Services.AddHealthChecks()
     .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ?? "", name: "SqlServer");

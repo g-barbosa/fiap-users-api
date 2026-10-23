@@ -20,3 +20,6 @@ data:
   # RabbitMQ - Configurações não sensíveis
   RabbitMq__Host: "rabbitmq"
   RabbitMq__Port: "5672"
+  RabbitMq__Username: "admin"
+  Jwt__Issuer: "FiapCloudGames"
+  Jwt__Audience: "FiapCloudGames"
