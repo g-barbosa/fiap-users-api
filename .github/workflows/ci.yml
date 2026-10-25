@@ -2,6 +2,9 @@
 # Push e deploy só na main, quando os secrets abaixo existirem:
 #   REGISTRY_USERNAME, REGISTRY_PASSWORD (usuário admin do ACR ou service principal)
 #   KUBE_CONFIG (kubeconfig em texto ou base64) para o rolling update
+# O deploy grava o SHA em k8s/kustomization.yaml, aplica com kubectl apply -k
+# e envia o manifest de volta para a main. O push usa GITHUB_TOKEN e não
+# dispara outra execução.
 name: CI
 
 on:
@@ -114,14 +117,29 @@ jobs:
     needs: image
     if: needs.image.outputs.deploy == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
       - name: Setup kubectl
         uses: azure/setup-kubectl@v5.2.0
 
-      - name: Rolling update
+      - name: Gravar tag e aplicar
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         run: |
+          tag="${GITHUB_SHA}"
+          file="k8s/kustomization.yaml"
+          if ! grep -q 'newTag:' "$file"; then
+            echo "::error::newTag ausente em $file"
+            exit 1
+          fi
+          sed -i -E "s/^([[:space:]]*newTag:).*/\\1 \"${tag}\"/" "$file"
+
           if printf '%s' "$KUBE_CONFIG" | head -c 20 | grep -q apiVersion; then
             printf '%s' "$KUBE_CONFIG" > "$RUNNER_TEMP/kubeconfig"
           else
@@ -129,6 +147,17 @@ jobs:
           fi
           chmod 600 "$RUNNER_TEMP/kubeconfig"
           export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
-          image="$REGISTRY/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          kubectl set image "deployment/${{ env.DEPLOYMENT }}" "${{ env.DEPLOYMENT }}=$image" -n "$NAMESPACE"
-          kubectl rollout status "deployment/${{ env.DEPLOYMENT }}" -n "$NAMESPACE" --timeout=300s
+
+          kubectl apply -k k8s
+          kubectl rollout status "deployment/${DEPLOYMENT}" -n "$NAMESPACE" --timeout=300s
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$file"
+          if git diff --cached --quiet; then
+            echo "kustomization.yaml já aponta para ${tag}."
+            exit 0
+          fi
+          git commit -m "ci: publica ${IMAGE_NAME}:${tag}"
+          git pull --rebase origin main
+          git push origin HEAD:main

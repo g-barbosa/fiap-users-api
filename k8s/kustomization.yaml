@@ -6,7 +6,7 @@ resources:
   - service.yaml
   - deployment.yaml
 
-# Azure Container Registry. A pipeline sobrescreve a tag com o SHA do commit.
+# Azure Container Registry. O deploy grava o SHA do commit em newTag e aplica este manifest.
 images:
   - name: fiap-users-api
     newName: fcgcontainerregistry.azurecr.io/fiap-users-api
