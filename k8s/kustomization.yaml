@@ -10,4 +10,4 @@ resources:
 images:
   - name: fiap-users-api
     newName: fcgcontainerregistry.azurecr.io/fiap-users-api
-    newTag: "0.1.0"
+    newTag: "06020165b84118a42c351fca228af4cab1b17944"
